@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, supabaseAdmin } from "@/lib/supabaseClient";
 
 export async function getpromptbyID(promptID: string) {
   try {
@@ -61,12 +61,27 @@ export async function getScriptByPromptId(
       .from("scripts")
       .select("*")
       .eq("prompt_id", promptId)
-      .single();
+      .order("created_at", { ascending: false })
+      .limit(1);
 
     if (error) throw error;
-    return data as Script;
+    return data && data.length > 0 ? (data[0] as Script) : null;
   } catch (error) {
     console.error("Error fetching script:", error);
     throw error;
   }
+}
+
+export async function saveAudio(scriptId: string, audioUrl: string) {
+  if (!supabaseAdmin) {
+    throw new Error('Admin client not available - this function can only be called server-side');
+  }
+  
+  const { data, error } = await supabaseAdmin
+    .from('audios')
+    .insert([{ script_id: scriptId, audio_url: audioUrl }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
 }

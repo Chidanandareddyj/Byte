@@ -56,7 +56,7 @@ export function Navbar() {
           <Link href="/login" className="hidden md:flex">
           <Button 
             variant="outline" 
-            className="hidden md:flex rounded-full border-gray-300 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80"
+            className="hidden md:flex rounded-full border-gray-300 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-white"
             onClick={() => router.push("/login")}
           >
             Login

@@ -29,13 +29,12 @@ const Page = () => {
     setLoading(false);
     if (error) {
       console.error("Error inserting prompt:", error);
-      alert("Failed to generate video. Please try again.");
-    } else {
-      alert("Video generation started successfully!");
+      alert("Failed to generate script. Please try again.");    } else {
+      alert("Script generation started successfully!");
       console.log("Inserted prompt:", data);
       // You can redirect or update the UI as needed
     }
-    router.push("/genereted-videos");
+    router.push(`/generated-script?id=${data.id}`); // Redirect to the generated script page with prompt ID
   };
 
   return (
