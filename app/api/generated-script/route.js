@@ -23,7 +23,7 @@ export async function POST(request) {
         
         console.log("Generated script result:", scriptResult);
         
-        // Save the complete script result (includes both remotion and TTS scripts)
+        // Save the complete script result (now just the Manim JSON)
         const savedScript = await saveScript(promptId, scriptResult);
         
         console.log("Saved script:", savedScript);
@@ -31,8 +31,6 @@ export async function POST(request) {
         return Response.json({ 
             success: true, 
             script: scriptResult,
-            remotionScript: scriptResult.remotionScript,
-            ttsNarration: scriptResult.ttsNarration,
             savedScript: savedScript 
         });
 
