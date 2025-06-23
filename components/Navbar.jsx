@@ -74,7 +74,19 @@ export function Navbar() {
               </Button>
             </Link>
           )}
-          
+          {user && (
+            <Button
+              variant="outline"
+              className="hidden md:flex rounded-full border-white/60 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white hover:text-blue-200 border transition-colors"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                setUser(null);
+                router.push("/");
+              }}
+            >
+              Logout
+            </Button>
+          )}
           {/* Mobile menu button */}
           <button 
             className="md:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800"
@@ -112,6 +124,19 @@ export function Navbar() {
             {!user && (
               <Button variant="outline" className="w-full text-white bg-white/20 border-white/60 hover:bg-white/30 hover:text-blue-200 transition-colors">
                 Login
+              </Button>
+            )}
+            {user && (
+              <Button
+                variant="outline"
+                className="w-full text-white bg-white/20 border-white/60 hover:bg-white/30 hover:text-blue-200 transition-colors"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setUser(null);
+                  router.push("/");
+                }}
+              >
+                Logout
               </Button>
             )}
           </nav>
