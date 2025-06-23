@@ -13,6 +13,25 @@ const client = new textToSpeech.TextToSpeechClient({
   keyFilename: credentialsPath,
 });
 
+// Helper function to clean text for Text-to-Speech
+function cleanTextForTTS(text: string): string {
+  // Remove unwanted characters and normalize text
+  return text
+    // Remove escape sequences
+    .replace(/\\[nrt]/g, ' ')
+    // Remove backslashes and forward slashes
+    .replace(/[\\\/]+/g, '')
+    // Remove JSON syntax characters
+    .replace(/[{}[\]"]/g, '')
+    // Normalize whitespace
+    .replace(/\s+/g, ' ')
+    // Remove duplicate punctuation
+    .replace(/\.{2,}/g, '.')
+    .replace(/[,;:]{2,}/g, ',')
+    // Clean up and trim
+    .trim();
+}
+
 // Helper function to split text into chunks under 5000 bytes
 function splitTextIntoChunks(text: string, maxBytes: number = 4500): string[] {
   const chunks: string[] = [];
@@ -60,12 +79,41 @@ export async function POST(request: Request) {
     const script = await getScriptByPromptId(promptId);
     if (!script) {
       return Response.json({ error: "Script not found for the given prompt ID" }, { status: 404 });
-    }    // Extract only narration text from JSON script
-    const rawScript = JSON.parse(script.script_text);
-    if (!rawScript || !rawScript.scenes || !Array.isArray(rawScript.scenes)) {
-      return Response.json({ error: "Invalid script format: 'scenes' array is missing or invalid" }, { status: 400 });
-    }
-    const scriptText = rawScript.scenes.map((s: any) => s.text).join('. ');
+     }    // Extract narration text, supporting both new dual-script format and legacy formats
+    let scriptText: string;
+    try {
+      const rawScript = JSON.parse(script.script_text);
+      
+      // Check if it's the new dual-script format
+      if (rawScript?.ttsNarration?.fullScript) {
+        scriptText = rawScript.ttsNarration.fullScript;
+        console.log("Using TTS narration script from dual-script format");
+      } 
+      // Check if it has ttsNarration with segments (fallback)
+      else if (rawScript?.ttsNarration?.segments && Array.isArray(rawScript.ttsNarration.segments)) {
+        scriptText = rawScript.ttsNarration.segments.map((s: any) => s.text).join('. ');
+        console.log("Using TTS segments from dual-script format");
+      }
+      // Check if it's the remotion script format (legacy support)
+      else if (rawScript?.remotionScript?.scenes && Array.isArray(rawScript.remotionScript.scenes)) {
+        scriptText = rawScript.remotionScript.scenes.map((s: any) => s.text).join('. ');
+        console.log("Using remotion script scenes as fallback");
+      }
+      // Check if it's old single script format with scenes
+      else if (rawScript?.scenes && Array.isArray(rawScript.scenes)) {
+        scriptText = rawScript.scenes.map((s: any) => s.text).join('. ');
+        console.log("Using legacy scenes format");
+      } 
+      else {
+        scriptText = script.script_text;
+        console.log("Using raw script text");
+      }
+    } catch {
+      // Fallback: script_text is plain text
+      scriptText = script.script_text;
+      console.log("Using plain text fallback");
+    }// Clean the script text to remove unwanted characters that TTS reads aloud
+    scriptText = cleanTextForTTS(scriptText);
     const textBytes = Buffer.byteLength(scriptText, 'utf8');
     
     let audioBuffers: Buffer[] = [];

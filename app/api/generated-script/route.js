@@ -16,22 +16,23 @@ export async function POST(request) {
             return Response.json({ error: 'Prompt not found' }, { status: 404 });
         }
 
-        console.log("Found prompt:", prompt);
-
-        const script = await main(prompt.prompt_text);
-        if (!script) {
+        console.log("Found prompt:", prompt);        const scriptResult = await main(prompt.prompt_text);
+        if (!scriptResult) {
             return Response.json({ error: 'Failed to generate script' }, { status: 500 });
         }
         
-        console.log("Generated script:", script);
+        console.log("Generated script result:", scriptResult);
         
-        const savedScript = await saveScript(promptId, script);
+        // Save the complete script result (includes both remotion and TTS scripts)
+        const savedScript = await saveScript(promptId, scriptResult);
         
         console.log("Saved script:", savedScript);
         
         return Response.json({ 
             success: true, 
-            script: script,
+            script: scriptResult,
+            remotionScript: scriptResult.remotionScript,
+            ttsNarration: scriptResult.ttsNarration,
             savedScript: savedScript 
         });
 
