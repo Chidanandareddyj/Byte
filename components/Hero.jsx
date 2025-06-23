@@ -1,6 +1,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button"; // Assuming you have a Button component
 import { Play } from 'lucide-react'; // Assuming you use lucide-react for icons
+import Link from 'next/link';
+import { ThanosSnapEffect } from './thanos-snap-effect';
 
 const Hero = () => {
   return (
@@ -29,12 +31,14 @@ const Hero = () => {
               Turn complex concepts into clear, visual explanations with just a few clicks.
             </p>
             <div className="mt-10">
-              <Button
-                size="lg"
-                className="bg-white/20 backdrop-blur-md text-white hover:bg-white/30 rounded-md px-8 py-3 text-lg border border-white/30 transition-all duration-300 hover:scale-105 animate-pulse font-sans"
-              >
-                Create Your First Video <span className="ml-2">➔</span>
-              </Button>
+              <Link href="/login">
+                <ThanosSnapEffect
+                  size="lg"
+                  className="bg-white/20 backdrop-blur-md text-white hover:bg-white/30 rounded-md px-8 py-3 text-lg border border-white/30 transition-all duration-300 hover:scale-105 animate-pulse font-sans"
+                >
+                  Create Your First Video <span className="ml-2">➔</span>
+                </ThanosSnapEffect>
+              </Link>
             </div>
           </div>
         </div>

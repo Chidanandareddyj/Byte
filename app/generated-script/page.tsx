@@ -68,62 +68,24 @@ export default function GenerateScriptPage() {
           <p className="text-sm text-gray-100 mb-6">{status}</p>
           {script && (
             <div className="space-y-4 w-full">
-              {/* TTS Narration Script */}
-              {script.ttsNarration && (
-                <div className="bg-blue-100/60 p-4 rounded-lg border border-blue-200">
-                  <h2 className="font-semibold mb-2 text-blue-900">🎧 TTS Narration Script</h2>
-                  <div className="bg-white/80 p-3 rounded border">
-                    <h3 className="font-medium text-sm text-gray-600 mb-2">Full Narration:</h3>
-                    <p className="text-sm leading-relaxed">{script.ttsNarration.fullScript}</p>
-                  </div>
-                  {script.ttsNarration.segments && script.ttsNarration.segments.length > 0 && (
-                    <div className="mt-3 bg-white/80 p-3 rounded border">
-                      <h3 className="font-medium text-sm text-gray-600 mb-2">Timed Segments:</h3>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {script.ttsNarration.segments.map((segment: any, index: number) => (
-                          <div key={index} className="text-xs bg-gray-50 p-2 rounded">
-                            <span className="font-mono text-gray-500">{segment.startTime}s-{segment.endTime}s:</span>
-                            <span className="ml-2">{segment.text}</span>
-                          </div>
-                        ))}
+              {/* Manim Script Display */}
+              <div className="bg-green-100/60 p-4 rounded-lg border border-green-200">
+                <h2 className="font-semibold mb-2 text-green-900">📐 Manim Script</h2>
+                <div className="bg-white/80 p-3 rounded border">
+                  <h3 className="font-medium text-sm text-gray-600 mb-2">
+                    {script.title}
+                  </h3>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {script.steps && script.steps.map((step: any, idx: number) => (
+                      <div key={idx} className="text-xs bg-gray-50 p-3 rounded border-l-2 border-green-400 mb-2">
+                        {step.text && <div className="mb-1"><strong>Text:</strong> {step.text}</div>}
+                        {step.math && <div className="mb-1"><strong>Math:</strong> <span className="font-mono">{step.math}</span></div>}
+                        {step.narration && <div className="mb-1"><strong>Narration:</strong> {step.narration}</div>}
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              {/* Remotion Video Script */}
-              {script.remotionScript && (
-                <div className="bg-green-100/60 p-4 rounded-lg border border-green-200">
-                  <h2 className="font-semibold mb-2 text-green-900">🎬 Remotion Video Script</h2>
-                  <div className="bg-white/80 p-3 rounded border">
-                    <h3 className="font-medium text-sm text-gray-600 mb-2">
-                      {script.remotionScript.title} ({script.remotionScript.totalDuration}s)
-                    </h3>
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {script.remotionScript.scenes && script.remotionScript.scenes.map((scene: any) => (
-                        <div key={scene.id} className="text-xs bg-gray-50 p-3 rounded border-l-2 border-green-400">
-                          <div className="font-mono text-gray-500 mb-1">
-                            Scene {scene.id}: {scene.startTime}s - {scene.endTime}s
-                          </div>
-                          <div className="mb-1"><strong>Text:</strong> {scene.text}</div>
-                          <div className="mb-1"><strong>Visual:</strong> {scene.description}</div>
-                          <div className="mb-1"><strong>Animation:</strong> {scene.animation}</div>
-                          <div><strong>Background:</strong> {scene.background}</div>
-                        </div>
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 </div>
-              )}
-              {/* Fallback for legacy format */}
-              {!script.ttsNarration && !script.remotionScript && (
-                <div className="bg-gray-100/80 p-4 rounded">
-                  <h2 className="font-semibold mb-2">📝 Generated Script</h2>
-                  <pre className="whitespace-pre-wrap text-sm">
-                    {typeof script === 'object' ? JSON.stringify(script, null, 2) : script}
-                  </pre>
-                </div>
-              )}
+              </div>
             </div>
           )}
           {audioUrl && (
