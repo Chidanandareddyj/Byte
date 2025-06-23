@@ -2,13 +2,23 @@
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    fetchUser();
+  }, []);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -18,34 +28,34 @@ export function Navbar() {
     <div className="container mx-auto px-4 py-6 relative z-50">
       <nav className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-2xl font-bold">Byte-learn</div>
+          <div className="text-2xl font-bold text-white">Byte-learn</div>
         </div>
 
         {/* Desktop Navigation */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuLink className="px-4 py-2 text-sm font-medium" href="#">
+              <NavigationMenuLink className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200" href="#">
                 Product
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="px-4 py-2 text-sm font-medium" href="#">
+              <NavigationMenuLink className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200" href="#">
                 Templates
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="px-4 py-2 text-sm font-medium" href="#">
+              <NavigationMenuLink className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200" href="#">
                 Use Cases
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="px-4 py-2 text-sm font-medium" href="#">
+              <NavigationMenuLink className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200" href="#">
                 Pricing
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="px-4 py-2 text-sm font-medium" href="#">
+              <NavigationMenuLink className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200" href="#">
                 Docs
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -53,15 +63,17 @@ export function Navbar() {
         </NavigationMenu>
 
         <div className="flex items-center gap-2">
-          <Link href="/login" className="hidden md:flex">
-          <Button 
-            variant="outline" 
-            className="hidden md:flex rounded-full border-gray-300 bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-900 dark:text-white"
-            onClick={() => router.push("/login")}
-          >
-            Login
-          </Button>
-          </Link>
+          {!user && (
+            <Link href="/login" className="hidden md:flex">
+              <Button
+                variant="outline"
+                className="hidden md:flex rounded-full border-white/60 bg-white/20 backdrop-blur-sm dark:bg-slate-800/80 hover:bg-white/30 dark:hover:bg-slate-700 text-white dark:text-white hover:text-blue-200 border transition-colors"
+                onClick={() => router.push("/login")}
+              >
+                Login
+              </Button>
+            </Link>
+          )}
           
           {/* Mobile menu button */}
           <button 
@@ -82,24 +94,26 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 p-4 shadow-lg">
           <nav className="flex flex-col space-y-4">
-            <a href="#" className="px-4 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-slate-800 rounded">
+            <a href="#" className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded transition-colors">
               Product
             </a>
-            <a href="#" className="px-4 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-slate-800 rounded">
+            <a href="#" className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded transition-colors">
               Templates
             </a>
-            <a href="#" className="px-4 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-slate-800 rounded">
+            <a href="#" className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded transition-colors">
               Use Cases
             </a>
-            <a href="#" className="px-4 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-slate-800 rounded">
+            <a href="#" className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded transition-colors">
               Pricing
             </a>
-            <a href="#" className="px-4 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-slate-800 rounded">
+            <a href="#" className="px-4 py-2 text-sm font-medium text-white hover:text-blue-200 hover:bg-white/10 dark:hover:bg-slate-800 rounded transition-colors">
               Docs
             </a>
-            <Button variant="outline" className="w-full">
-              Login
-            </Button>
+            {!user && (
+              <Button variant="outline" className="w-full text-white bg-white/20 border-white/60 hover:bg-white/30 hover:text-blue-200 transition-colors">
+                Login
+              </Button>
+            )}
           </nav>
         </div>
       )}
