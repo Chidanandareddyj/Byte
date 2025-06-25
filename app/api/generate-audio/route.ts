@@ -7,11 +7,39 @@ import { supabaseAdmin } from "@/lib/supabaseClient";
 
 const textToSpeech = require("@google-cloud/text-to-speech");
 
-// Explicitly provide credentials path
-const credentialsPath = path.join(process.cwd(), "gcloud-credentials.json");
-const client = new textToSpeech.TextToSpeechClient({
-  keyFilename: credentialsPath,
-});
+// Initialize Google Cloud client with explicit credentials
+let client: any;
+
+try {
+  // Explicitly provide credentials path
+  const credentialsPath = path.join(process.cwd(), "gcloud-credentials.json");
+  
+  // Check if credentials file exists
+  if (!fs.existsSync(credentialsPath)) {
+    throw new Error(`Credentials file not found at: ${credentialsPath}`);
+  }
+  
+  // Read and parse credentials
+  const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
+  
+  client = new textToSpeech.TextToSpeechClient({
+    credentials: credentials,
+    projectId: credentials.project_id,
+  });
+  
+  console.log("Google Cloud TTS client initialized successfully with credentials file");
+} catch (error) {
+  console.error("Failed to initialize with credentials file, trying environment variable:", error);
+  
+  try {
+    // Fallback: try using environment variable authentication
+    client = new textToSpeech.TextToSpeechClient();
+    console.log("Google Cloud TTS client initialized successfully with environment variable");
+  } catch (envError) {
+    console.error("Failed to initialize Google Cloud TTS client with environment variable:", envError);
+    client = null;
+  }
+}
 
 // Helper function to clean text for Text-to-Speech
 function cleanTextForTTS(text: string): string {
@@ -69,6 +97,12 @@ export async function POST(request: Request) {
     // Check if supabaseAdmin is available (server-side only)
     if (!supabaseAdmin) {
       return Response.json({ error: "Server configuration error" }, { status: 500 });
+    }
+
+    // Check if Google Cloud TTS client is properly initialized
+    if (!client) {
+      console.error("Google Cloud TTS client not initialized");
+      return Response.json({ error: "Text-to-Speech service not available" }, { status: 500 });
     }
 
     const { promptId } = await request.json();
@@ -133,18 +167,28 @@ export async function POST(request: Request) {
           audioConfig: { audioEncoding: "MP3" },
         };
 
-        const [response] = await client.synthesizeSpeech(ttsRequest);
-        
-        const chunkTempPath = path.join(tempDir, `audio-chunk-${promptId}-${i}.mp3`);
-        tempPaths.push(chunkTempPath);
-        
-        await util.promisify(fs.writeFile)(
-          chunkTempPath,
-          response.audioContent,
-          "binary"
-        );
-        
-        audioBuffers.push(fs.readFileSync(chunkTempPath));
+        try {
+          const [response] = await client.synthesizeSpeech(ttsRequest);
+          
+          const chunkTempPath = path.join(tempDir, `audio-chunk-${promptId}-${i}.mp3`);
+          tempPaths.push(chunkTempPath);
+          
+          await util.promisify(fs.writeFile)(
+            chunkTempPath,
+            response.audioContent,
+            "binary"
+          );
+          
+          audioBuffers.push(fs.readFileSync(chunkTempPath));
+        } catch (ttsError: any) {
+          console.error(`TTS synthesis error for chunk ${i}:`, ttsError);
+          if (ttsError.code === 16) {
+            return Response.json({ 
+              error: "Google Cloud authentication failed. Please check your service account credentials." 
+            }, { status: 500 });
+          }
+          throw ttsError;
+        }
       }
       
       // Combine all audio buffers
@@ -164,17 +208,28 @@ export async function POST(request: Request) {
         audioConfig: { audioEncoding: "MP3" },
       };
 
-      const [response] = await client.synthesizeSpeech(ttsRequest);
-      
-      finalTempPath = path.join(tempDir, `audio-${promptId}.mp3`);
-      
-      await util.promisify(fs.writeFile)(
-        finalTempPath,
-        response.audioContent,
-        "binary"
-      );
+      try {
+        const [response] = await client.synthesizeSpeech(ttsRequest);
+        
+        finalTempPath = path.join(tempDir, `audio-${promptId}.mp3`);
+        
+        await util.promisify(fs.writeFile)(
+          finalTempPath,
+          response.audioContent,
+          "binary"
+        );
+      } catch (ttsError: any) {
+        console.error("TTS synthesis error:", ttsError);
+        if (ttsError.code === 16) {
+          return Response.json({ 
+            error: "Google Cloud authentication failed. Please check your service account credentials." 
+          }, { status: 500 });
+        }
+        throw ttsError;
+      }
     }    const audiobuffer = fs.readFileSync(finalTempPath);
-    const filepath = `audio-files/${promptId}.mp3`;const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+    const filepath = `${promptId}.mp3`;
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from("audio-files")
       .upload(filepath, audiobuffer, {
         contentType: "audio/mpeg",

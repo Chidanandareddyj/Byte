@@ -40,6 +40,7 @@ export default function GenerateScriptPage() {
           body: JSON.stringify({ promptId })
         })
         const audioResult = await audioRes.json()
+        console.log(audioResult)
         if (!audioRes.ok) throw new Error(audioResult.error || 'Failed to generate audio')
         setAudioUrl(audioResult.audioUrl)
 
@@ -91,7 +92,21 @@ export default function GenerateScriptPage() {
           {audioUrl && (
             <div className="w-full">
               <h2 className="mt-6 font-semibold text-white">🎧 Preview Audio</h2>
-              <audio controls src={audioUrl} className="mt-2 w-full rounded" />
+              <audio
+                controls
+                src={audioUrl}
+                className="mt-2 w-full rounded"
+                onError={() => alert('Failed to load audio. Please check if the file exists and is a valid MP3.')}
+              />
+              <a
+                href={audioUrl}
+                download
+                className="block mt-2 text-blue-200 underline text-xs"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download Audio
+              </a>
             </div>
           )}
           {!loading && (

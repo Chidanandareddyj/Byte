@@ -85,3 +85,24 @@ export async function saveAudio(scriptId: string, audioUrl: string) {
   if (error) throw error
   return data
 }
+
+export async function getAudioByScriptId(scriptId: string) {
+  const { data, error } = await supabase
+    .from('audios')
+    .select('*')
+    .eq('script_id', scriptId)
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function saveVideo(scriptId: string, videoUrl: string) {
+  const { data, error } = await supabase
+    .from('videos')
+    .insert([{ script_id: scriptId, video_url: videoUrl }])
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+

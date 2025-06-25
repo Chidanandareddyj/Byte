@@ -7,15 +7,15 @@ export async function main(prompt: string) {
     You are a math video generation assistant.
 Given a user prompt ${prompt}, generate a JSON with the following structure:
 
-title: a short scene title (no spaces or special characters, suitable as a Python class name)
+title: a elobarated scene title (no spaces or special characters, suitable as a Python class name)
 
 steps: a list of scene steps. Each step can have:
 
 text (plain narration or explanation)
 
-math (optional LaTeX math expression, for Manim)
+math ( LaTeX math expression, for Manim)
 
-narration: a full narration script (~1–2 minutes) that covers the concept, written for voice-over.
+narration: a full narration script (~3 minutes) that covers the concept, written for voice-over.
 
 ✳️ Output JSON only. No explanations.
 ✳️ Math expressions should be LaTeX-compatible for Manim.
